@@ -7,8 +7,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from .serializers import CustomTokenObtainPairSerializer, CreateCustomUserSerializer, CustomUserSerializer
 from django.contrib.auth.hashers import make_password
-from . import async_save_account_serializer
-from Helpers import async_upload_to_cloudinary, upload_to_cloudinary, save_account_serializer
+from Helpers import upload_to_cloudinary, save_account_serializer
 from .forms import CustomUserCreationForm
 
 
