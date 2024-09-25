@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+import cloudinary
+from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -33,6 +35,8 @@ CORS_ALLOWED_ORIGINS = [] # Add the frontend URL here
 
 CORS_ALLOW_CREDENTIALS = True # Allows cookies to be sent with the requests
 
+AUTH_USER_MODEL = 'Account.CustomUser'
+
 
 # Application definition
 
@@ -46,6 +50,9 @@ INSTALLED_APPS = [
 
     'corsheaders',
     'rest_framework',
+    'rest_framework_simplejwt',
+
+    'Account',
     
 ]
 
@@ -86,13 +93,21 @@ WSGI_APPLICATION = 'Api.wsgi.application'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 DATABASES = {
+    # 'default': {
+    #     'ENGINE': 'django.db.backends.postgresql',
+    #     'NAME': 'afriHikaya_Db',
+    #     'USER': 'postgres',
+    #     'PASSWORD': 'ikenna123', # Change to your database password
+    #     'HOST': 'localhost',  # Change if your database is on a different host
+    #     'PORT': '5432',  # Change if your database uses a different port
+    # }
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'afriHikaya_DB',
-        'USER': 'postgres',
-        'PASSWORD': 'ikenna123', # Change to your database password
-        'HOST': 'localhost',  # Change if your database is on a different host
-        'PORT': '5432',  # Change if your database uses a different port
+        'ENGINE': 'djongo',
+        'NAME': 'afriHikaya_db',  # Name of your MongoDB database
+        'ENFORCE_SCHEMA': False,
+        'CLIENT': {
+                'host': 'mongodb+srv://AfriHikaya_backend:DGIPSEdpSpxcGk1w@cluster0.jcu1j.mongodb.net/?retryWrites=true&w=majority&tls=true&tlsAllowInvalidCertificates=true'
+        }
     }
 }
 
@@ -139,14 +154,39 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.SessionAuthentication',
-        'rest_framework.authentication.BasicAuthentication',
-    ],
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',  # All views require authentication by default
-    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+    'DEFAULT_PERMMISSION_CLASSES': (
+        'rest_framework.permissions.ISAthenticated',
+    ),
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',  # Default output is JSON
     ],
+}
+
+
+cloudinary.config( 
+  cloud_name = "dsgoxhzep",
+  api_key = "818914991297126",
+  api_secret = "mbTuDKDtBbJIeBA1wcELADBxUYc"
+)
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'ROTATE_REFRESH_TOKENS': False,
+    'BLACKLIST_AFTER_ROTATION': True,
+    'UPTDATE_LAST_LOGIN': False,
+    'ALGORITHM': 'HS256',
+    'SIGNING_KEY': SECRET_KEY,
+    'VERIFYING_KEY': None,
+    'AUDIENCE': None,
+    'ISSUER': None,
+    'AUTH_HEADER_TYPES': ('Bearer',),
+    'USER_ID_FIELD': 'id',
+    'USER_ID_CLAIM': 'user_id',
+    'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
+    'TOKEN_TYPE_CLAIM': 'token_type',
+    'JTI_CLAIM': 'jti',
 }

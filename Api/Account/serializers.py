@@ -1,0 +1,28 @@
+from rest_framework.serializers import ModelSerializer
+from .models import CustomUser
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+
+class CustomUserSerializer(ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = '__all__'
+        
+class CreateCustomUserSerializer(ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ['email', 'username', 'password', 'first_name', 'last_name', 'country', 'native_language', 'hobbies', 'profile_pic_url', 'roles']
+        
+class UpdateCustomUserSerializer(ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ['email', 'username', 'password', 'first_name', 'last_name', 'country', 'native_language', 'hobbies', 'profile_pic_url', 'roles']
+        
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+        
+        token['username'] = user.username
+        token['email'] = user.email
+        
+        return token
