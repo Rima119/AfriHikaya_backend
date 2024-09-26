@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import BaseUserManager, AbstractUser, PermissionsMixin
+from rest_framework_simplejwt.tokens import RefreshToken
 
 # Create your models here.
 
@@ -53,3 +54,14 @@ class CustomUser(AbstractUser, PermissionsMixin):
     
     def __str__(self) :
         return self.email
+    
+    def get_token(self):
+        refresh = RefreshToken.for_user(self)
+
+        # Add custom claims
+        refresh['user_id'] = self.id
+        refresh['roles'] = self.roles
+        refresh['email'] = self.email
+
+        # Return the entire refresh token object
+        return refresh

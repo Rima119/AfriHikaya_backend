@@ -9,6 +9,7 @@ from .serializers import CustomTokenObtainPairSerializer, CreateCustomUserSerial
 from django.contrib.auth.hashers import make_password
 from Helpers import upload_to_cloudinary, save_account_serializer
 from .forms import CustomUserCreationForm
+from rest_framework_simplejwt.tokens import RefreshToken
 
 
 # Create your views here.
@@ -34,31 +35,31 @@ def refresh(request):
 def create(request):
     try:
         form = CustomUserCreationForm(request.data, request.FILES)
-        print(request.data.get('hobbies_list'))
-        hobbies_list = request.data.get('hobbies_list')
-        if type(hobbies_list) != str:
-            form.data['hobbies'] = ", ".join(hobbies_list)
-        form.data['hobbies'] = hobbies_list
+        print(request.data.get('hobbies'))
         
         if form.is_valid():
             image = form.cleaned_data['profile_pic']
-            print(form.cleaned_data)
-            print(form.cleaned_data['first_name'])
             public_id = form.cleaned_data['first_name'] + "_" + form.cleaned_data['last_name'] + "_profile_pic"
             
-            # Make sure to await async functions
-            uploaded_result = upload_to_cloudinary.upload(image, 'profile_pics', "image", public_id)
+            uploaded_result = upload_to_cloudinary.upload(image, folder='profile_pics', resource_type="image", public_id=public_id)
             form.cleaned_data['profile_pic_url'] = uploaded_result
             
             serializer = CreateCustomUserSerializer(data=form.cleaned_data)
             
-            # Await async saving
             res = save_account_serializer.save_serializer(serializer, 'User created successfully')
             
             if 'error' in res:
                 return Response(res['error'], status=res['status'])
             
-            return Response(res['message'], status=res['status'])
+            user = serializer.instance
+            print(user)
+            token = user.get_token()
+
+            return Response({
+                'message': res['message'],
+                'access_token': str(token.access_token),
+                'refresh_token': str(token),
+            }, status=res['status'])
         
         return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)
     
