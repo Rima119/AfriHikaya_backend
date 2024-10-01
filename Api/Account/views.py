@@ -7,9 +7,10 @@ from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from .serializers import CustomTokenObtainPairSerializer, CreateCustomUserSerializer, CustomUserSerializer
 from django.contrib.auth.hashers import make_password
-from Helpers import upload_to_cloudinary, save_account_serializer
+from Helpers import upload_to_cloudinary, save_account_serializer, returned_user
 from .forms import CustomUserCreationForm
 from rest_framework_simplejwt.tokens import RefreshToken
+from .models import CustomUser
 
 
 # Create your views here.
@@ -35,7 +36,10 @@ def refresh(request):
 def create(request):
     try:
         form = CustomUserCreationForm(request.data, request.FILES)
-        print(request.data.get('hobbies'))
+        #check if email is already in use
+        user_email = CustomUser.objects.filter(email=request.data.get('email')).first()
+        if user_email:
+            return Response({'error': 'This email is already in use. Please choose a different one.'}, status=status.HTTP_400_BAD_REQUEST)
         
         if form.is_valid():
             image = form.cleaned_data['profile_pic']
@@ -53,13 +57,25 @@ def create(request):
             
             user = serializer.instance
             print(user)
-            token = user.get_token()
+            response = returned_user.get_token(user, res)
+            # token = user.get_token()
+            # refresh = RefreshToken.for_user(user)
+            # access_token = str(refresh.access_token)
+            # refresh_token = str(refresh)
+            # user_data = CreateCustomUserSerializer(user).data
 
-            return Response({
-                'message': res['message'],
-                'access_token': str(token.access_token),
-                'refresh_token': str(token),
-            }, status=res['status'])
+            # Create a response object to set the cookie
+            # response = JsonResponse({
+            #     'message': res['message'],
+            #     'user': user_data,
+            #     'access_token': access_token,
+            # }, status=res['status'])
+            
+            # Set refresh token in a cookie
+            # response.set_cookie('refresh_token', str(refresh_token), httponly=True, max_age=60 * 60 * 24 * 7,  # 7 days
+            #                     samesite='Lax')  # CSRF protection
+            
+            return response
         
         return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)
     

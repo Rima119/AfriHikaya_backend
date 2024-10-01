@@ -108,6 +108,9 @@ DATABASES = {
         'CLIENT': {
                 'host': 'mongodb+srv://AfriHikaya_backend:DGIPSEdpSpxcGk1w@cluster0.jcu1j.mongodb.net/?retryWrites=true&w=majority&tls=true&tlsAllowInvalidCertificates=true'
         }
+        # 'CLIENT': {
+        #         'host': 'mongodb+srv://charlykso141:gDFm3H8m6dybaaLv@cluster0.vdqo7oo.mongodb.net/?retryWrites=true&w=majority&tls=true&tlsAllowInvalidCertificates=true'
+        # }
     }
 }
 

@@ -1,5 +1,6 @@
 from rest_framework import status
 from django.contrib.auth.hashers import make_password
+from rest_framework.exceptions import ValidationError
 
 def save_serializer(serializer, succ_message):
     try:
@@ -12,5 +13,7 @@ def save_serializer(serializer, succ_message):
             serializer.save()
             return {'message': succ_message, 'status': status.HTTP_201_CREATED}
         return {'error': serializer.errors, 'status': status.HTTP_400_BAD_REQUEST}
+    except ValidationError as e:
+        return {'error': e.detail, 'status': status.HTTP_400_BAD_REQUEST}
     except Exception as e:
         return {'error': str(e), 'status': status.HTTP_500_INTERNAL_SERVER_ERROR}
