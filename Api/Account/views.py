@@ -5,7 +5,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-from .serializers import CustomTokenObtainPairSerializer, CreateCustomUserSerializer, CustomUserSerializer
+from .serializers import CustomTokenObtainPairSerializer, CreateCustomUserSerializer, CustomUserSerializer, ReturnedUserSerializer
 from django.contrib.auth.hashers import make_password
 from Helpers import upload_to_cloudinary, save_account_serializer, returned_user
 from .forms import CustomUserCreationForm
@@ -21,8 +21,27 @@ def home(request):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def login(request):
-    view = TokenObtainPairView.as_view(serializer_class = CustomTokenObtainPairSerializer)
-    return view(request._request)
+    view = TokenObtainPairView.as_view(serializer_class=CustomTokenObtainPairSerializer)
+    response = view(request._request)
+    
+    if response.status_code == status.HTTP_200_OK:
+        user = CustomUser.objects.get(email=request.data.get('email'))
+        user_data = ReturnedUserSerializer(user).data
+        response.data.update(user_data)
+        
+        # Set the refresh token in a cookie
+        refresh_token = response.data.get('refresh')
+        response.set_cookie(
+            key='refresh_token',
+            value=refresh_token,
+            httponly=True,
+            secure=True,  # Use secure=True in production
+            samesite='Lax'
+        )
+        # Remove the refresh token from the response body
+        del response.data['refresh']
+    
+    return response
 
 
 @api_view(['POST'])
@@ -56,24 +75,8 @@ def create(request):
                 return Response(res['error'], status=res['status'])
             
             user = serializer.instance
-            print(user)
+            # print(user)
             response = returned_user.get_token(user, res)
-            # token = user.get_token()
-            # refresh = RefreshToken.for_user(user)
-            # access_token = str(refresh.access_token)
-            # refresh_token = str(refresh)
-            # user_data = CreateCustomUserSerializer(user).data
-
-            # Create a response object to set the cookie
-            # response = JsonResponse({
-            #     'message': res['message'],
-            #     'user': user_data,
-            #     'access_token': access_token,
-            # }, status=res['status'])
-            
-            # Set refresh token in a cookie
-            # response.set_cookie('refresh_token', str(refresh_token), httponly=True, max_age=60 * 60 * 24 * 7,  # 7 days
-            #                     samesite='Lax')  # CSRF protection
             
             return response
         

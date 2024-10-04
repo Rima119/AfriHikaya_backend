@@ -12,9 +12,17 @@ def get_token(user, res):
 
         # Create a response object to set the cookie
         response = JsonResponse({
-            'message': res['message'],
-            'user': user_data,
-            'access_token': access_token,
+            'id': user_data['id'],
+            'email': user_data['email'],
+            'username': user_data['username'],
+            'roles': user_data['roles'],
+            'first_name': user_data['first_name'],
+            'last_name': user_data['last_name'],
+            'country': user_data['country'],
+            'native_language': user_data['native_language'],
+            'hobbies': user_data['hobbies'],
+            'profile_pic_url': user_data['profile_pic_url'],
+            'access': access_token,
         }, status=res['status'])
 
         # Set refresh token in a cookie

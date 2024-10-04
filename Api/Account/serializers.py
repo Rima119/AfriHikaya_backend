@@ -17,7 +17,7 @@ class CreateCustomUserSerializer(ModelSerializer):
 class ReturnedUserSerializer(ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ['email', 'username', 'first_name', 'last_name', 'country', 'native_language', 'hobbies', 'profile_pic_url', 'roles']
+        fields = [ 'id', 'email', 'username', 'first_name', 'last_name', 'country', 'native_language', 'hobbies', 'profile_pic_url', 'roles']
 
 class UpdateCustomUserSerializer(ModelSerializer):
     class Meta:
